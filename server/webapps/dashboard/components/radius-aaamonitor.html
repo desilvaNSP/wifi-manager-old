@@ -108,7 +108,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="btn-edit-radiusclient" disabled>Save</button>
+                <button type="button" class="btn btn-primary" id="btn-edit-radiusclient">Save</button>
             </div>
         </div>
     </div>
@@ -187,7 +187,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="btn-add-radiusclient" disabled>Save</button>
+                <button type="button" class="btn btn-primary" id="btn-add-radiusclient" >Save</button>
             </div>
         </div>
     </div>
@@ -287,7 +287,6 @@
                 $.post('/radius/user/connection',JSON.stringify(payload), function (result) {
                     connEst = result;
                     if (connEst){
-                        $('#btn-add-radiusclient').prop("disabled", false);
                         toastr.success("Healthy Connection");
                     }else{
                         toastr.error("Radius Server Authentication Failed")
@@ -312,19 +311,53 @@
                     serverip: $('#input-serverip').val(),
                     authport: $('#input-auth-port').val(),
                     secret: $('#input-shared-secret').val(),
-                    testusername: $('#edit-radius-test-username').val(),
-                    password: $('#edit-radius-test-password').val()
+                    testusername: $('#radius-test-username').val(),
+                    password: $('#radius-test-password').val()
                 };
-                if (connEst) {
-                    $("#rad-config-bodymodal").loadingOverlay({
+
+                $("#rad-config-bodymodal").loadingOverlay({
                         loadingText: 'Creating Radius Server'
-                    });
-                    $.post('/radius/createserver', JSON.stringify(payload), function (result) {
-                        $("#radiuserver-modal").modal('hide');
-                        $("#rad-config-bodymodal").loadingOverlay('remove');
-                        aaaTable.ajax.reload();
-                    });
-                }
+                });
+                $.post('/radius/user/connection',JSON.stringify(payload), function (result) {
+                    connEst = result;
+                    console.log(connEst);
+                    if (connEst){
+                        toastr.success("Healthy Connection");
+                        $.post('/radius/createserver', JSON.stringify(payload), function (result) {
+                            $("#radiuserver-modal").modal('hide');
+                            $("#rad-config-bodymodal").loadingOverlay('remove');
+                            swal("Succesfully Saved!",payload.servername +" AAA server configured ", "success")
+                            aaaTable.ajax.reload();
+                        });
+                    }else{
+                        toastr.error("Radius Server Authentication Failed")
+                        swal({
+                            title: "Connection Testing Failed !",
+                            text: "Do you still want to save the AAA parameters",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Yes, Save it!",
+                            cancelButtonText: "No, Cancel",
+                            closeOnConfirm: false,
+                            closeOnCancel: false
+                        }, function(isConfirm){
+                            if (isConfirm) {
+                                $.post('/radius/createserver', JSON.stringify(payload), function (result) {
+                                    $("#radiuserver-modal").modal('hide');
+                                    $("#rad-config-bodymodal").loadingOverlay('remove');
+                                    swal("Saved!", "Your AAA Parameters Save Successfully.", "success");
+                                    aaaTable.ajax.reload();
+                                });
+                            } else {
+                                $("#radiuserver-modal").modal('hide');
+                                $("#rad-config-bodymodal").loadingOverlay('remove');
+                                swal("Cancelled", "Safely Canceled", "error");
+                            }
+                        });
+                    }
+                });
+
             }
         });
 
@@ -386,9 +419,7 @@
                 $.post('/radius/user/connection',JSON.stringify(payload), function (result) {
                     connEst = result;
                     if (connEst){
-                        $('#btn-edit-radiusclient').prop("disabled", false);
                         toastr.success("Healthy Connection")
-                        // $('#collapse-testedituser').collapse('hide')
                     }else{
                         toastr.error("Radius Server Authentication Failed")
                     }
@@ -405,31 +436,73 @@
                     serverip: $('#edit-serverip').val(),
                     authport: $('#edit-auth-port').val(),
                     secret: $('#edit-shared-secret').val(),
-                    testusername: $('#edit-radius-test-username'),
+                    testusername: $('#edit-radius-test-username').val(),
                     password: $('#edit-radius-test-password').val()
                 };
-                if (connEst) {
-                    $.ajax({
-                        url: '/radius/' + Cookies.get('tenantid') + '/radiusdetails/' + selectedRadiusInstance.radiusinstid,
-                        type: 'PUT',
-                        data: JSON.stringify(payload),
-                        beforeSend: function () {
-                            $("#rad-editconfig-bodymodal").loadingOverlay({
-                                loadingText: 'Updating Radius Server'
-                            });
-                        },
-                        success: function (result) {
-                            $("#rad-editconfig-bodymodal").loadingOverlay('remove');
-                            $("#edit-radiuserver-modal").modal('hide');
-                            aaaTable.ajax.reload();
-                        },
-                        error: function (e) {
-                            console.log(e)
-                        }
-                    });
-                }
+                $("#rad-editconfig-bodymodal").loadingOverlay({
+                    loadingText: 'Updating Radius Server'
+                });
+                console.log(payload)
+                $.post('/radius/user/connection',JSON.stringify(payload), function (result) {
+                    connEst = result;
+                    console.log(result);
+                    if (connEst){
+                        toastr.success("Healthy Connection");
+                        $.ajax({
+                            url: '/radius/' + Cookies.get('tenantid') + '/radiusdetails/' + selectedRadiusInstance.radiusinstid,
+                            type: 'PUT',
+                            data: JSON.stringify(payload),
+                            success: function () {
+                                $("#rad-editconfig-bodymodal").loadingOverlay('remove');
+                                $("#edit-radiuserver-modal").modal('hide');
+                                swal("Succesfully Saved!",payload.servername +" AAA server configured ", "success");
+                                aaaTable.ajax.reload();
+                            },
+                            error: function (e) {
+                                console.log(e)
+                            }
+                        });
+                    }else{
+                        toastr.error("Radius Server Authentication Failed")
+                        swal({
+                            title: "Connection Testing Failed !",
+                            text: "Do you still want to update the AAA parameters",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Yes, Update it!",
+                            cancelButtonText: "No, Cancel",
+                            closeOnConfirm: false,
+                            closeOnCancel: false
+                        }, function(isConfirm){
+                            if (isConfirm) {
+                                $.ajax({
+                                    url: '/radius/' + Cookies.get('tenantid') + '/radiusdetails/' + selectedRadiusInstance.radiusinstid,
+                                    type: 'PUT',
+                                    data: JSON.stringify(payload),
+                                    success: function () {
+                                        $("#rad-editconfig-bodymodal").loadingOverlay('remove');
+                                        $("#edit-radiuserver-modal").modal('hide');
+                                        swal("Saved!", "Your AAA Parameters Update Successfully.", "success");
+                                        aaaTable.ajax.reload();
+                                    },
+                                    error: function (e) {
+                                        console.log(e)
+                                    }
+                                });
+                            } else {
+                                $("#rad-editconfig-bodymodal").loadingOverlay('remove');
+                                $("#edit-radiuserver-modal").modal('hide');
+                                swal("Cancelled", "Safely Canceled", "error");
+                            }
+                        });
+                    }
+                });
             }
         });
+
+
+
 
 
         $.validator.addMethod('IP4Checker', function(value) {
