@@ -50,7 +50,7 @@ func RegisterDashboardUser(user dao.DashboardUser) error {
 		return err
 	} else {
 		userId, _ := result.LastInsertId()
-		//AddDashboardUserPermissions(userId, user)
+		AddDashboardUserPermissions(userId, user)
 		AddDashboardUserApGroups(userId, user)
 	}
 	return err
@@ -193,8 +193,8 @@ func AddDashboardUserPermissions(userId int64, user dao.DashboardUser) error {
 	if err != nil {
 		return err
 	}
-	for _, permission := range user.Permissions {
-		_, err := stmtIns.Exec(GetPermissionId(user.TenantId, permission), userId)
+	for _, permission := range user.PermissionIds {
+		_, err := stmtIns.Exec(permission, userId)
 		if err != nil {
 			return err
 		}

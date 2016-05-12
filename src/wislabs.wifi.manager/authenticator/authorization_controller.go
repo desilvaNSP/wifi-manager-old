@@ -7,6 +7,7 @@ import (
 const ACTION_EXECUTE string = "execute"
 const ACTION_WRITE string = "write"
 const ACTION_READ string = "read"
+const ACTION_DOWNLOAD string = "download"
 
 type Permission struct {
 	permission string

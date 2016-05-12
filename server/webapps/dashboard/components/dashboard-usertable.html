@@ -75,11 +75,11 @@
                         <div class="form-group col-lg-6">
                             <label for="inputUsername">Username</label>
                             <input type="text" class="form-control" id="inputUsername" name="username"
-                                   placeholder="Username" required>
+                                   placeholder="Username" value="sandun" required>
                         </div>
                         <div class="form-group col-lg-6">
                             <label for="inputEmail">Email address</label>
-                            <input type="email" class="form-control" id="inputEmail" name="email" placeholder="Email"
+                            <input type="email" class="form-control" id="inputEmail" name="email" placeholder="Email" value="desilva.nsp@gmail.com"
                                    required>
                         </div>
                     </div>
@@ -87,12 +87,12 @@
                         <div class="form-group col-lg-6">
                             <label for="inputPassword">Password</label>
                             <input type="password" class="form-control" id="inputPassword" name="password"
-                                   placeholder="Password" required>
+                                   placeholder="Password" value="12345" required>
                         </div>
                         <div class="form-group col-lg-6">
                             <label for="inputPassword">Confirm Password</label>
                             <input type="password" class="form-control" id="inputConfirmPassword" name="confirmpassword"
-                                   placeholder="Confirm Password" required>
+                                   placeholder="Confirm Password" value="12345" required>
                         </div>
                     </div>
                     <!--<div class="form-group">-->
@@ -125,17 +125,19 @@
                         <div class="checkbox">
                             <div class="row">
                                 {{#userscopes}}
-                                <div class="col-sm-6">
-                                    <label>
-                                        <input type="checkbox" name="userscope" value="{{.}}">{{.}}
-                                    </label>
-                                    {{#actions}}
-                                    <div class="col-sm-6">
-                                        <label>
-                                            <input type="checkbox" name="datascope" value="{{.}}">{{.}}
-                                        </label>
+                                <div class="col-sm-12">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <label>{{name}}</label>
+                                        </div>
+                                        {{#actions}}
+                                        <div class="col-sm-2">
+                                            <label>
+                                                <input type="checkbox" name="userscope" data-permissionid="{{permissionid}}" value="{{action}}">{{action}}
+                                            </label>
+                                        </div>
+                                        {{/actions}}
                                     </div>
-                                    {{/actions}}
                                 </div>
                                 {{/userscopes}}
                             </div>
@@ -397,6 +399,7 @@
                     email: $('#inputEmail').val(),
                     status: newUserStatus,
                     apgroups: getCheckedDataScopes('datascope'),
+                    permissionsids:getCheckedUserPermissions('userscope'),
                     roles: getCheckedDataScopes('role')
                 };
                 $("#dbadduser-body").loadingOverlay({
@@ -411,6 +414,17 @@
             return false;
         });
     });
+
+    function getCheckedUserPermissions(chkboxName) {
+        var checkboxes = document.getElementsByName(chkboxName);
+        var checkboxesChecked = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked) {
+                checkboxesChecked.push($(checkboxes[i]).data('permissionid'));
+            }
+        }
+        return checkboxesChecked.length > 0 ? checkboxesChecked : null;
+    }
 
     function getCheckedDataScopes(chkboxName) {
         var checkboxes = document.getElementsByName(chkboxName);

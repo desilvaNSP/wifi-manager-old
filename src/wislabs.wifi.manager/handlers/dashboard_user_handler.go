@@ -163,10 +163,10 @@ func GetAllUserPermissionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	permissions := dashboard.GetAllDashboardUserPermissions(tenantId)
 
-	userscopes := make(map[string][]string)
+	userscopes := make(map[string][]dao.Permission)
 
 	for _, scope := range permissions {
-		userscopes[scope.Name] = append(userscopes[scope.Name], scope.Action)
+		userscopes[scope.Name] = append(userscopes[scope.Name], scope)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

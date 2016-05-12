@@ -113,11 +113,6 @@
 //                $('#dashboard-metric-content').empty()
                 var rendered = Mustache.render(template, {});
                 $('#dashboard-metric-content').html(rendered);
-                if(Cookies.get("username")!="admin"){
-                    $("#exportCSV").hide();
-                }else{
-                    $("#exportCSV").show();
-                }
             })
         }
 
