@@ -94,6 +94,7 @@ func getUserScopes(user *commons.SystemUser) map[string][]string {
 		if err != nil {
 			log.Fatal(err)
 		}
+		println(name)
 		scopes[name] = append(scopes[name], action)
 	}
 	err = rows.Err()

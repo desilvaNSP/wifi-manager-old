@@ -163,10 +163,16 @@ func GetAllUserPermissionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	permissions := dashboard.GetAllDashboardUserPermissions(tenantId)
 
+	userscopes := make(map[string][]string)
+
+	for _, scope := range permissions {
+		userscopes[scope.Name] = append(userscopes[scope.Name], scope.Action)
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
-	if err := json.NewEncoder(w).Encode(permissions); err != nil {
+	if err := json.NewEncoder(w).Encode(userscopes); err != nil {
 		panic(err)
 	}
 }

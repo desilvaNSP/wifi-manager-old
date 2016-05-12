@@ -25,21 +25,33 @@ function renderWifiUserTable() {
 }
 
 function renderDashboardUserTable() {
-    var tenantUsers, userLocationGroups = [];
+    var tenantUsers, userLocationGroups = []
+    var userPermissions = [];
+    var userPermissionsActions = []
     var users = $.get('/dashboard/' + Cookies.get('tenantid') + '/users', function (result) {
         tenantUsers = result
     });
 
     var allowedGroups = $.get('/dashboard/' + Cookies.get('tenantid') + '/users/' + Cookies.get('username'), function (result) {
         userLocationGroups = result.apgroups
+        console.log(userLocationGroups)
     });
-    $.when(users, allowedGroups).done(function () {
+
+    var allowedUserScopes = $.get('/dashboard/' + Cookies.get('tenantid') + '/permissions', function (data) {
+        for(var obj in data){
+            userPermissions.push(obj)
+        }
+    });
+
+    $.when(users, allowedGroups, allowedUserScopes).done(function () {
         $.get('components/dashboard-usertable.html', function (template) {
                 var rendered = Mustache.render(template, {
                     data: JSON.stringify(tenantUsers),
                     tenantDomain: Cookies.get('tenantdomain'),
                     roles: [{name: "Admin"}, {name: "DevOp"}, {name: "Dashboard User"}],
-                    groups: userLocationGroups
+                    groups: userLocationGroups,
+                    userscopes:userPermissions,
+                    actions:userPermissionsActions
                 });
                 $('#content-main').html(rendered);
             }

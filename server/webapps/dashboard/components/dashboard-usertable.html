@@ -71,25 +71,29 @@
                         <input type="text" class="form-control" id="inputTenantDomain" name="tenantdomain"
                                value="{{tenantDomain}}" required readonly>
                     </div>
-                    <div class="form-group">
-                        <label for="inputUsername">Username</label>
-                        <input type="text" class="form-control" id="inputUsername" name="username"
-                               placeholder="Username" required>
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <label for="inputUsername">Username</label>
+                            <input type="text" class="form-control" id="inputUsername" name="username"
+                                   placeholder="Username" required>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label for="inputEmail">Email address</label>
+                            <input type="email" class="form-control" id="inputEmail" name="email" placeholder="Email"
+                                   required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="inputEmail">Email address</label>
-                        <input type="email" class="form-control" id="inputEmail" name="email" placeholder="Email"
-                               required>
-                    </div>
-                    <div class="form-group">
-                        <label for="inputPassword">Password</label>
-                        <input type="password" class="form-control" id="inputPassword" name="password"
-                               placeholder="Password" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="inputPassword">Confirm Password</label>
-                        <input type="password" class="form-control" id="inputConfirmPassword" name="confirmpassword"
-                               placeholder="Confirm Password" required>
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <label for="inputPassword">Password</label>
+                            <input type="password" class="form-control" id="inputPassword" name="password"
+                                   placeholder="Password" required>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label for="inputPassword">Confirm Password</label>
+                            <input type="password" class="form-control" id="inputConfirmPassword" name="confirmpassword"
+                                   placeholder="Confirm Password" required>
+                        </div>
                     </div>
                     <!--<div class="form-group">-->
                         <!--<label for="inputPassword">Roles</label>-->
@@ -113,6 +117,27 @@
                                     </label>
                                 </div>
                                 {{/groups}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Allowed User Scopes</label>
+                        <div class="checkbox">
+                            <div class="row">
+                                {{#userscopes}}
+                                <div class="col-sm-6">
+                                    <label>
+                                        <input type="checkbox" name="userscope" value="{{.}}">{{.}}
+                                    </label>
+                                    {{#actions}}
+                                    <div class="col-sm-6">
+                                        <label>
+                                            <input type="checkbox" name="datascope" value="{{.}}">{{.}}
+                                        </label>
+                                    </div>
+                                    {{/actions}}
+                                </div>
+                                {{/userscopes}}
                             </div>
                         </div>
                     </div>

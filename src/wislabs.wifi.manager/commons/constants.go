@@ -21,7 +21,7 @@ const GET_RETURNING_USERS_LOCATION string    = "SELECT COUNT(DISTINCT username) 
 
 /* Dashboard Users */
 const GET_ALL_DASHBOARD_USERS string 			= "SELECT tenantid, username, email, status FROM users WHERE tenantid=?"
-const GET_ALL_PERMISSIONS string	 		= "SELECT permissionid, name FROM permissions WHERE tenantid=?"
+const GET_ALL_PERMISSIONS string	 		= "SELECT permissionid, name, action FROM permissions WHERE tenantid=?"
 const GET_PERMISSION_ID string	 			= "SELECT permissionid FROM permissions WHERE name= ? AND tenantid=?"
 const GET_USER_ID string	 			= "SELECT userid FROM users WHERE username= ? AND tenantid=?"
 const GET_AP_GROUP_ID string	 			= "SELECT groupid FROM apgroups WHERE groupname= ? AND tenantid=?"
