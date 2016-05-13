@@ -70,7 +70,53 @@ func UpdateDashboardUser(user dao.DashboardUser) error {
 	if err != nil {
 		return err
 	}
-	AddDashboardUserApGroups(GetUserId(user.TenantId, user.Username), user)
+	UpdateDashboardUserAppGroups(GetUserId(user.TenantId, user.Username), user)
+	UpdateDashboardUserPermissions(GetUserId(user.TenantId, user.Username),user)
+	return err
+}
+
+func UpdateDashboardUserAppGroups(userId int64, user dao.DashboardUser) error{
+	println("Comment : UpdateDashboardUserAppGroups ",userId)
+	dbMap := utils.GetDBConnection("dashboard");
+	defer dbMap.Db.Close()
+
+	stmtIns, err := dbMap.Db.Prepare(commons.DELETE_DASHBOARD_USER_APPGROUPS)
+	defer stmtIns.Close()
+
+	if err != nil {
+		return err
+	}
+	_, err = stmtIns.Exec(userId)
+	if err != nil {
+		return err
+	}else{
+		err := AddDashboardUserApGroups(userId,user)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+func UpdateDashboardUserPermissions(userId int64, user dao.DashboardUser) error{
+	dbMap := utils.GetDBConnection("dashboard");
+	defer dbMap.Db.Close()
+
+	stmtIns, err := dbMap.Db.Prepare(commons.DELETE_DASHBOARD_USER_PERMISSIONS)
+	defer stmtIns.Close()
+
+	if err != nil {
+		return err
+	}
+	_, err = stmtIns.Exec(userId)
+	if err != nil {
+		return err
+	}else{
+		err := AddDashboardUserPermissions(userId,user)
+		if err != nil {
+			return err
+		}
+	}
 	return err
 }
 
@@ -134,7 +180,7 @@ func DeleteDashboardUser(tenantId int, username string) {
 	}
 	defer stmtIns.Close()
 }
-
+//look
 func GetDashboardUser(tenantId int, username string) dao.DashboardUser {
 	dbMap := utils.GetDBConnection("dashboard");
 	defer dbMap.Db.Close()
@@ -146,7 +192,7 @@ func GetDashboardUser(tenantId int, username string) dao.DashboardUser {
 		return user
 	}
 	user.TenantId = tenantId
-	user.Permissions = GetDashboardUserPermissions(tenantId, username)
+	user.PermissionSets = GetDashboardUserPermissions(tenantId, username)
 	user.ApGroups = GetDashboardUserApGroups(tenantId, username)
 	return user
 }
@@ -173,37 +219,15 @@ func GetDashboardUserRoles(tenantId int) []dao.Role {
 	return roles
 }
 
-func GetDashboardUserPermissions(tenantId int, username string) []string {
+func GetDashboardUserPermissions(tenantId int, username string) []dao.Permission {
 	dbMap := utils.GetDBConnection("dashboard");
 	defer dbMap.Db.Close()
-	var permissions []string
+	var permissions []dao.Permission
 	_, err := dbMap.Select(&permissions, commons.GET_DASHBOARD_USER_PERMISSIONS, username, tenantId)
 	if err != nil {
 		panic(err.Error()) // proper error handling instead of panic in your app
 	}
 	return permissions
-}
-
-func AddDashboardUserPermissions(userId int64, user dao.DashboardUser) error {
-	dbMap := utils.GetDBConnection("dashboard");
-	defer dbMap.Db.Close()
-	stmtIns, err := dbMap.Db.Prepare(commons.ADD_DASHBOARD_USER_PERMISSIONS)
-	defer stmtIns.Close()
-
-	if err != nil {
-		return err
-	}
-	for _, permission := range user.PermissionIds {
-		_, err := stmtIns.Exec(permission, userId)
-		if err != nil {
-			return err
-		}
-	}
-	return err
-}
-
-func UpdateDashboardUserPermissions() {
-
 }
 
 func GetAllDashboardUserPermissions(tenantId int) []dao.Permission {
@@ -217,11 +241,13 @@ func GetAllDashboardUserPermissions(tenantId int) []dao.Permission {
 	return permissions
 }
 
-func GetPermissionId(tenantId int, permission string) int64 {
+
+
+func GetPermissionId(tenantId int, permissionname string, permissionaction string) int64 {
 	dbMap := utils.GetDBConnection("dashboard");
 	defer dbMap.Db.Close()
 
-	permissionId, err := dbMap.SelectInt(commons.GET_PERMISSION_ID, permission, tenantId)
+	permissionId, err := dbMap.SelectInt(commons.GET_PERMISSION_ID, permissionname, permissionaction, tenantId)
 	if err != nil {
 		panic(err.Error()) // proper error handling instead of panic in your app
 	}
@@ -250,6 +276,24 @@ func AddDashboardUserApGroups(userId int64, user dao.DashboardUser) error {
 	}
 	for _, groupName := range user.ApGroups {
 		_, err := stmtIns.Exec(GetApGroupId(user.TenantId, groupName), userId)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+func AddDashboardUserPermissions(userId int64, user dao.DashboardUser) error {
+	dbMap := utils.GetDBConnection("dashboard");
+	defer dbMap.Db.Close()
+	stmtIns, err := dbMap.Db.Prepare(commons.ADD_DASHBOARD_USER_PERMISSIONS)
+	defer stmtIns.Close()
+
+	if err != nil {
+		return err
+	}
+	for _, permission := range user.PermissionSets {
+		_, err := stmtIns.Exec(GetPermissionId(user.TenantId,permission.Name,permission.Action), userId)
 		if err != nil {
 			return err
 		}

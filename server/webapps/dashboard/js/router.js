@@ -25,6 +25,7 @@ function renderWifiUserTable() {
 }
 
 function renderDashboardUserTable() {
+    var editUserFromValidator;
     var tenantUsers, userLocationGroups = []
     var userPermissions = [];
     var users = $.get('/dashboard/' + Cookies.get('tenantid') + '/users', function (result) {
@@ -48,7 +49,7 @@ function renderDashboardUserTable() {
 
 
     $.when(users, allowedGroups, allowedUserScopes).done(function () {
-        $.get('components/dashboard-usertable.html', function (template) {
+       var renderUsertable = $.get('components/dashboard-usertable.html', function (template) {
                 var rendered = Mustache.render(template, {
                     data: JSON.stringify(tenantUsers),
                     tenantDomain: Cookies.get('tenantdomain'),
@@ -59,6 +60,18 @@ function renderDashboardUserTable() {
                 $('#content-main').html(rendered);
             }
         );
+
+        $.when(renderUsertable).done(function(){
+            $.get('components/dashboard-userupdate-modal.html', function (template) {
+                console.log(userLocationGroups)
+                var rendered = Mustache.render(template, {
+                    groups:userLocationGroups,
+                    userscopes:userPermissions,
+                    tenantDomain:Cookies.get('tenantdomain')
+                });
+                $('#userupdate-modal-content').html(rendered);
+            });
+        });
     });
 }
 
