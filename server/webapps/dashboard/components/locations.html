@@ -1,3 +1,16 @@
+<div class="feature-details-container">
+    <div class="row">
+        <div id="widget-active-accespoint" class="configuration-container col-lg-3">
+
+        </div>
+        <div id="widget-inactive-accespoint" class="configuration-container col-lg-3">
+
+        </div>
+        <div id="widget-distinct-mac" class="configuration-container col-lg-3">
+
+        </div>
+    </div>
+</div>
 <!-- Access point Map -->
 <div class="row">
     <div class="col-lg-12">
@@ -88,7 +101,32 @@
 <div id="add-wifi-location-modal-content"></div>
 
 <script>
+    _activePeriodFrom = 0, _activePeriodTo = 0 ;
+
     $(document).ready(function () {
+       /* _apPeriodTo = moment().format('YYYY-MM-DD')
+        _apPeriodFrom = moment().subtract(500, 'days').format('YYYY-MM-DD');*/
+        _apPeriodTo = '2016-01-21 00:00:00';
+        _apPeriodFrom = '2016-01-10 00:00:00';
+
+        renderFeatureDetailsWidgets({
+            url: '/wifi/locations/activeapcounts?from=' + _apPeriodFrom + '&to=' + _apPeriodTo + '&threshold=' +  Cookies.get("activeap-treshold"),
+            templateUrl: 'activeap-details.html',
+            containerId: '#widget-active-accespoint',
+            defaultTreshold : Cookies.get("activeap-treshold")
+        });
+        renderFeatureDetailsWidgets({
+            url: '/wifi/locations/inactiveapcounts?from=' + _apPeriodFrom + '&to=' + _apPeriodTo + '&threshold=' +  Cookies.get("inactiveap-treshold"),
+            templateUrl: 'inactive-details.html',
+            containerId: '#widget-inactive-accespoint',
+            defaultTreshold: Cookies.get("inactiveap-treshold")
+        });
+        renderFeatureDetailsWidgets({
+            url: '/wifi/locations/distinctmaccount?from=' + _apPeriodFrom + '&to=' + _apPeriodTo,
+            templateUrl: 'distinctmac-details.html',
+            containerId: '#widget-distinct-mac'
+        });
+
         var serverOriginUrl = window.location.origin;
         var mapData = {
             "US": 498,
@@ -224,7 +262,7 @@
             $.ajax({
                 url: '/wifi/' + Cookies.get('tenantid') + '/locations/' + selectedLocation.mac + '/' + selectedLocation.ssid + '/' + selectedLocation.groupname,
                 type: 'DELETE',
-                beforeSend:function(){
+                beforeSend: function () {
                     $("#deletelocation-body").loadingOverlay({
                         loadingText: 'Updating location'
                     });
@@ -256,17 +294,17 @@
                 }
             });
             var updateWifiLocationFromValidator;
-            $.when(locationsAjax).done(function(){
+            $.when(locationsAjax).done(function () {
                 $.get('components/wifi-locationupdate-modal.html', function (template) {
                     var rendered = Mustache.render(template, {
                         locations: locations,
-                        groupname:selectedLocation.groupname,
-                        mac:selectedLocation.mac,
-                        apname:selectedLocation.apname,
-                        ssid:selectedLocation.ssid,
-                        bssid:selectedLocation.bssid,
-                        longitude:selectedLocation.longitude,
-                        latitude:selectedLocation.longitude
+                        groupname: selectedLocation.groupname,
+                        mac: selectedLocation.mac,
+                        apname: selectedLocation.apname,
+                        ssid: selectedLocation.ssid,
+                        bssid: selectedLocation.bssid,
+                        longitude: selectedLocation.longitude,
+                        latitude: selectedLocation.longitude
                     });
 
                     $('#add-wifi-location-modal-content').html(rendered);
@@ -313,9 +351,9 @@
             $("#add-wifi-location-modal-content").off('click').on("click", '#btn-update-wifilocation', function (event) {
                 var payload = {
                     tenantid: parseInt(Cookies.get('tenantid')),
-                    locationid:selectedLocation.locationid,
+                    locationid: selectedLocation.locationid,
                     mac: $('#edit-mac').val(),
-                    apname:$('#edit-apname').val(),
+                    apname: $('#edit-apname').val(),
                     ssid: $('#edit-ssid').val(),
                     bssid: $('#edit-bssid').val(),
                     latitude: parseFloat($('#edit-latitude').val()),
@@ -326,9 +364,9 @@
                     loadingText: 'Updating location'
                 });
                 $.post('/wifi/locationsupdate', JSON.stringify(payload), function (result) {
-                        $("#editlocation-body").loadingOverlay('remove');
-                        $('#update-wifilocation-modal').modal('hide');
-                        locationTable.ajax.reload();
+                    $("#editlocation-body").loadingOverlay('remove');
+                    $('#update-wifilocation-modal').modal('hide');
+                    locationTable.ajax.reload();
                 });
             });
         });
@@ -443,5 +481,21 @@
             });
         });
     });
+
+    function renderFeatureDetailsWidgets(details) {
+        var detailsRequest, count;
+        detailsRequest = $.get(details.url, function (data) {
+            count = data;
+        });
+        $.when(detailsRequest).done(function () {
+            $.get('components/widgets/featuredetails-widgets/' + details.templateUrl, function (template) {
+                var rendered = Mustache.render(template, {
+                    value: count,
+                    threshold:details.defaultTreshold
+                });
+                $(details.containerId).html(rendered);
+            });
+        });
+    }
 </script>
 

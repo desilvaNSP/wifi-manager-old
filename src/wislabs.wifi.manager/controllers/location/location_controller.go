@@ -7,6 +7,7 @@ import (
 	"wislabs.wifi.manager/commons"
 	"wislabs.wifi.manager/controllers/dashboard"
 	"strings"
+	"errors"
 )
 
 func GetAllLocations(tenantid int) []dao.ApLocation {
@@ -106,6 +107,22 @@ func DeleteAccessPoint(mac string, tenantid int) error {
 	} else {
 		return nil
 	}
+}
+
+func GetAccessPointFeatureDetails(constraints dao.AccessPointConstraints) (int, error){
+	dbMap := utils.GetDBConnection(commons.SUMMARY_DB);
+	defer dbMap.Db.Close()
+	var selectedResult []utils.NullString
+	var err error;
+	if constraints.Threshold != 0 {
+		_, err = dbMap.Select(&selectedResult,constraints.Query, constraints.From, constraints.To, constraints.TenantId, constraints.Threshold)
+	}else {
+		_, err = dbMap.Select(&selectedResult,constraints.Query, constraints.From, constraints.To, constraints.TenantId)
+	}
+	if err != nil {
+		return len(selectedResult), errors.New(err.Error())
+	}
+	return len(selectedResult), nil
 }
 
 func checkErr(err error, msg string) {

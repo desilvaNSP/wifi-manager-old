@@ -72,7 +72,9 @@ const GET_AP_GROUP_SSIDS string	          = "SELECT distinct(ssid) FROM aplocati
 const DELETE_AP_LOCATION string           = "DELETE FROM aplocations WHERE ssid=? AND mac=? AND groupname=? AND tenantid=?"
 const DELETE_AP_GROUP string 	          = "DELETE FROM aplocations WHERE groupname=? AND tenantid=?"
 const DELETE_AP string 			  = "DELETE FROM aplocations WHERE mac=? AND tenantid=?"
-
+const GET_ACTIVE_APS_COUNT        = "SELECT acttable.calledstationmac FROM (SELECT DISTINCT calledstationmac, date FROM dailyacct where date >= ? AND date <= ? AND tenantid = ? GROUP BY calledstationmac, date) AS acttable GROUP BY acttable.calledstationmac HAVING COUNT(*) >? "
+const GET_INACTIVE_APS_COUNT        = "SELECT acttable.calledstationmac FROM (SELECT DISTINCT calledstationmac, date FROM dailyacct where date >= ? AND date <= ? AND tenantid = ? GROUP BY calledstationmac, date) AS acttable GROUP BY acttable.calledstationmac HAVING COUNT(*) <= ? "
+const GET_DISTINCT_MAC  = "SELECT acttable.calledstationmac FROM (SELECT DISTINCT calledstationmac, date FROM dailyacct where date >= ? AND date <= ? AND tenantid = ? GROUP BY calledstationmac , date) AS acttable GROUP BY acttable.calledstationmac"
 /* Dashboard Apps */
 const GET_DASHBOARD_APP string 		   = "SELECT appid, tenantid, name, aggregate FROM apps WHERE tenantid=? AND name=?"
 const GET_DASHBOARD_APP_GROUPS string      = "SELECT groupname FROM appgroups WHERE appid=?"

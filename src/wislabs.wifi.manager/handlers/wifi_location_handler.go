@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"net/http"
 	_ "github.com/go-sql-driver/mysql"
+	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
-	"log"
 	"wislabs.wifi.manager/controllers/location"
 	"strconv"
 	"strings"
+	"wislabs.wifi.manager/commons"
 )
 
 func GetLocations(w http.ResponseWriter, r *http.Request) {
@@ -182,3 +183,82 @@ func DeleteAccessPoint(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
 }
+
+/**
+* GET
+* @path /wifi/locations/activeapcounts
+* return
+*/
+
+func GetActiveAPHandler(w http.ResponseWriter, r *http.Request) {
+	constraints := getMergeAllConstraint(r,commons.GET_ACTIVE_APS_COUNT)
+	var countActiveAP int
+	var err error
+	countActiveAP, err = location.GetAccessPointFeatureDetails(constraints)
+	checkErr(err, "Error occourred while getting active ap count ")
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(countActiveAP); err != nil {
+		panic(err)
+	}
+}
+
+/**
+* GET
+* @path /wifi/locations/inactiveapcounts
+* return
+*/
+
+func GetInactiveAPHandler(w http.ResponseWriter, r *http.Request) {
+	constraints := getMergeAllConstraint(r,commons.GET_INACTIVE_APS_COUNT)
+	var countInactiveAP int
+
+	var err error
+	countInactiveAP, err = location.GetAccessPointFeatureDetails(constraints)
+	checkErr(err, "Error occourred while getting inactive ap count ")
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(countInactiveAP); err != nil {
+		panic(err)
+	}
+}
+
+/**
+* GET
+* @path /wifi/locations/distinctmaccount
+* return
+*/
+func GetDistinctMacCountHandler(w http.ResponseWriter, r *http.Request) {
+	constraints := getMergeAllConstraint(r,commons.GET_DISTINCT_MAC)
+	var distinctMac int
+
+	var err error
+	distinctMac, err = location.GetAccessPointFeatureDetails(constraints)
+	checkErr(err, "Error occourred while getting active ap count ")
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(distinctMac); err != nil {
+		panic(err)
+	}
+}
+
+func getMergeAllConstraint(r *http.Request,	query string) dao.AccessPointConstraints{
+	var constraints dao.AccessPointConstraints
+	constraints.To = r.URL.Query().Get("to")
+	constraints.From = r.URL.Query().Get("from")
+	threshold := r.URL.Query().Get("threshold")
+	var err error
+	if len(threshold) != 0  {
+		constraints.Threshold, err = strconv.Atoi(r.URL.Query().Get("threshold"));
+		checkErr(err, "Error while reading treshold")
+	}
+	constraints.TenantId, err = strconv.Atoi(r.Header.Get("tenantid"))
+	checkErr(err, "Error while reading tenantid")
+	constraints.Query = query
+
+	return constraints
+}
+
